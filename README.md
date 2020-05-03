@@ -75,7 +75,29 @@ Solutions generated in: 0.11228 sec
 ```
 
 ## Implementation
-TODO
+The SATBSolver attempts to generate all solutions in the form of sequences that minimize the semitone change difference between chords in the initial chord formula template. Here is the process which it undergoes:
+1. **Input Reading**
+   * Reading in initial condition and chord formulae template.
+2. **Formula Model Generation**
+   * Matches each chord formula with its formula model, which specifies the chord composition which includes its intervals and note names (ex. A#).
+   * Includes 7th, 9th, 11th, and 13th chords, suspended notes, altered notes, and added notes (though not all is supported yet).
+3. **Model Sync**
+   * Initial condition is matched with first chord model.
+4. **Prioritized Breadth-first Search**
+   * For each transition between chord formulae, the transitions that have the smallest amount of semitone changes are checked first. Compared to brute-force checking of all configurations, this approach is 5 - 10 times more efficient as it only checks a subset. All optimal transitions are found.
+5. **Sequence Generation and DP-based Aggregation**
+   * Each optimal transition branches off into a new sequence. Since sequences that arrive at the same chord configuration can have a differing number of total semitone changes, the sequence with lower changes is perpetuated.
+6. **Report Optimal Sequences**
+   * The globally optimal sequence solutions are found and outputted to the terminal as seen in the [Results](#results) section.
+
+## TODO
+* Allow user to choose intermittent chord configurations to reduce the number of final optimal solutions.
+* Use library/software to display solutions on staves rather than in terminal.
+* Fully implement support for all chord modifications (infrastructure already exists for it).
+* Fully implement support for 5- and 6-part harmony (infrastructure already exists for it).
+* Fix base note of chords so they aren't manipulated during transition optimization.
 
 ## Support
 Currently only works for 4-part harmony. Infrastructure exists to execute 5- or 6-part harmony but there are hardcoded restrictions that will raise an error.
+
+Currently only a subset of chord modifications will properly work. The amount of code changes to make this work is small, but I'll get to it when I have the time.
