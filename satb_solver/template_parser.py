@@ -12,6 +12,7 @@ from model.chord_formulas import (AUGChord, Chord, DIM7Chord, DIMChord,
 from model.classifications import ACCSYM, INVS
 from model.dt_def import FormulaParts
 from model.exceptions import UnknownChordError
+from model.solver_config import get_config
 
 
 class TemplateParser:
@@ -85,6 +86,9 @@ class TemplateParser:
 
     def parse_init_cond(self, init_notes: List[str]) -> Iterator[str]:
         notes = init_notes.split()
-        assert len(notes) == 4, 'Initial SATB harmony is not 4-part'
+        global_settings = get_config()
+        assert len(notes) == global_settings['voice_count'], (
+            'Initial SATB harmony is not {}-part'.format(global_settings['voice_count'])
+        )
         for note_str in notes:
             yield note_str

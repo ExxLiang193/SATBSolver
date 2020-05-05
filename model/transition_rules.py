@@ -6,6 +6,7 @@ from typing import List
 from model.chord_formulas import DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord
 from model.dt_def import Transition, TransitionContext
 from model.satb_elements import AbstractNote, Note
+from model.solver_config import get_config
 
 
 class AbstractRule(ABC):
@@ -16,11 +17,10 @@ class AbstractRule(ABC):
 
 
 class AllNotesMatchedRule(AbstractRule):
-    NOTE_COUNT = 4
-
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
-        return len(matchings) == cls.NOTE_COUNT
+        global_settings = get_config()
+        return len(matchings) == global_settings['voice_count']
 
 
 class ValidParallelIntervalRule(AbstractRule):
