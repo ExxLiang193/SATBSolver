@@ -4,15 +4,15 @@ class BaseException(Exception):
 
 
 class ExtensionError(BaseException):
-    def __init__(self, message):
+    def __init__(self, message: str):
         self.message = message
 
 
 class UnknownChordError(BaseException):
-    def __init__(self, message):
+    def __init__(self, message: str):
         self.message = message
 
 
 class UnableToTransitionError(BaseException):
-    def __init__(self, message):
+    def __init__(self, message: str):
         self.message = message

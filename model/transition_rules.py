@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from collections import Counter
 from itertools import combinations
+from typing import List
 
 from model.chord_formulas import DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord
+from model.nt_def import Transition, TransitionContext
 from model.satb_elements import AbstractNote, Note
 
 
@@ -17,7 +19,7 @@ class AllNotesMatchedRule(AbstractRule):
     NOTE_COUNT = 4
 
     @classmethod
-    def validate(cls, matchings, transition_context):
+    def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
         return len(matchings) == cls.NOTE_COUNT
 
 
@@ -25,23 +27,24 @@ class ValidParallelIntervalRule(AbstractRule):
     VALID_PARALLEL_INTERVALS = {3, 4, 8, 9}
 
     @classmethod
-    def validate(cls, raw_matchings, transition_context):
-        for pair in combinations(raw_matchings, 2):
-            pair_one, pair_two = pair[0], pair[1]
+    def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        for trans_pair in combinations(matchings, 2):
+            lower_trans, upper_trans = trans_pair[0], trans_pair[1]
             if (
                 (
-                    (pair_two.next_note.note_repr.abs_pos -
-                     pair_one.next_note.note_repr.abs_pos) % 12 ==
-                    (pair_two.cur_note.note_repr.abs_pos -
-                     pair_one.cur_note.note_repr.abs_pos) % 12
+                    (upper_trans.next_pair.note_repr.abs_pos -
+                     lower_trans.next_pair.note_repr.abs_pos) % 12 ==
+                    (upper_trans.cur_pair.note_repr.abs_pos -
+                     lower_trans.cur_pair.note_repr.abs_pos) % 12
                 ) &
                 (
-                    (pair_two.next_note.note_repr.abs_pos - pair_one.next_note.note_repr.abs_pos)
+                    (upper_trans.next_pair.note_repr.abs_pos -
+                     lower_trans.next_pair.note_repr.abs_pos)
                     not in cls.VALID_PARALLEL_INTERVALS
                 ) &
                 (
-                    not (pair_one.cur_note.note_repr.abs_pos == 
-                         pair_one.next_note.note_repr.abs_pos)
+                    not (lower_trans.cur_pair.note_repr.abs_pos == 
+                         lower_trans.next_pair.note_repr.abs_pos)
                 )
             ):
                 return False
@@ -50,14 +53,16 @@ class ValidParallelIntervalRule(AbstractRule):
 
 class VoicesNotExceedingOctaveNorCrossingRule(AbstractRule):
     @classmethod
-    def validate(cls, raw_matchings, transition_context):
-        for i in range(2, len(raw_matchings)):
-            pair_one = raw_matchings[i - 1]
-            pair_two = raw_matchings[i]
+    def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        for i in range(2, len(matchings)):
+            lower_trans = matchings[i - 1]
+            upper_trans = matchings[i]
             # There should not any perfect unisons nor intervals exceeding an octave
             if (
-                (pair_two.next_note.note_repr.abs_pos - pair_one.next_note.note_repr.abs_pos <= 0) |
-                (pair_two.next_note.note_repr.abs_pos - pair_one.next_note.note_repr.abs_pos > 12)
+                (upper_trans.next_pair.note_repr.abs_pos -
+                 lower_trans.next_pair.note_repr.abs_pos <= 0) |
+                (upper_trans.next_pair.note_repr.abs_pos -
+                 lower_trans.next_pair.note_repr.abs_pos > 12)
             ):
                 return False
         return True
@@ -80,16 +85,16 @@ class VoicesWithinRangeRule(AbstractRule):
         return (pos >= voice_range[0].abs_pos & pos <= voice_range[1].abs_pos)
 
     @classmethod
-    def validate(cls, raw_matchings, transition_context):
+    def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
         voices = None
-        if len(raw_matchings) == 4:
+        if len(matchings) == 4:
             voices = cls.FOUR_VOICES
-        elif len(raw_matchings) == 5:
+        elif len(matchings) == 5:
             voices = cls.FIVE_VOICES
-        elif len(raw_matchings) == 6:
+        elif len(matchings) == 6:
             voices = cls.SIX_VOICES
-        for matching, voice_range in zip(raw_matchings, voices):
-            if not cls._is_within_range(matching.next_note.note_repr.abs_pos, voice_range):
+        for trans, voice_range in zip(matchings, voices):
+            if not cls._is_within_range(trans.next_pair.note_repr.abs_pos, voice_range):
                 return False
         return True
 
@@ -108,36 +113,36 @@ class DominantNotesResolvingRule(AbstractRule):
     }
 
     @classmethod
-    def _is_within_tolerance(cls, simple_matching, tolerance_set):
-        if simple_matching.cur_note.scale_pos in tolerance_set:
+    def _is_within_tolerance(cls, trans, tolerance_set):
+        if trans.cur_pair.scale_pos in tolerance_set:
             if (
-                (simple_matching.next_note.note_repr.abs_pos -
-                 simple_matching.cur_note.note_repr.abs_pos)
-                not in tolerance_set[simple_matching.cur_note.scale_pos]
+                (trans.next_pair.note_repr.abs_pos -
+                 trans.cur_pair.note_repr.abs_pos)
+                not in tolerance_set[trans.cur_pair.scale_pos]
             ):
                 return False
         return True
 
     @classmethod
-    def validate(cls, raw_matchings, transition_context):
+    def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
         cur_chord = transition_context.cur_satb_chord
         if any(isinstance(cur_chord.chord_formula, chord_type)
                for chord_type in (DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord)):
-            for simple_matching in raw_matchings:
-                if not cls._is_within_tolerance(simple_matching, cls.DOM_TOL):
+            for trans in matchings:
+                if not cls._is_within_tolerance(trans, cls.DOM_TOL):
                     return False
-        for simple_matching in raw_matchings:
-            if not cls._is_within_tolerance(simple_matching, cls.SUS_TOL):
+        for trans in matchings:
+            if not cls._is_within_tolerance(trans, cls.SUS_TOL):
                 return False
         return True
 
 
 class AcceptableNoteFrequenciesRule(AbstractRule):
     @classmethod
-    def validate(cls, raw_matchings, transition_context):
+    def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
         pos_counter = Counter()
-        for simple_matching in raw_matchings:
-            pos_counter[simple_matching.next_note.scale_pos] += 1
+        for trans in matchings:
+            pos_counter[trans.next_pair.scale_pos] += 1
         freq_tol = transition_context.next_satb_chord.chord_formula.get_note_freqs()
         for pos, freq_range in freq_tol.items():
             if (

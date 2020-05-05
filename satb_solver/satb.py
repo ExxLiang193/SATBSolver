@@ -1,12 +1,13 @@
 import os
+from typing import List
 
 from model.exceptions import ExtensionError
-from satb_solver.template_parser import TemplateParser
+from model.satb_elements import SATBSequence
 from satb_solver.chord_transitioner import ChordTransitioner
+from satb_solver.template_parser import TemplateParser
 
 
 class SATBSolver:
-
     def __init__(self, source_filepath):
         self.source_filepath = source_filepath
         self.template_parser = TemplateParser()
@@ -25,7 +26,7 @@ class SATBSolver:
             for value in sf_it:
                 yield value.strip()
 
-    def report_solutions(self, template, solution_seqs):
+    def report_solutions(self, template: List[str], solution_seqs: List[SATBSequence]) -> None:
         try:
             width = os.get_terminal_size()[0]
         except OSError:

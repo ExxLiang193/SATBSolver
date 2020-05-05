@@ -1,5 +1,5 @@
 import logging
-
+from typing import Tuple
 from model.multimap import OneWayMultiMap
 
 log = logging.getLogger('classifications')
@@ -14,7 +14,7 @@ class ACCSYM:
     ORDER = [FLFL, FL, NAT, SH, SHSH]
 
     @classmethod
-    def _get_next_acc(cls, acc, adj):
+    def _get_next_acc(cls, acc: str, adj: int) -> str:
         new_acc_pos = cls.ORDER.index(acc) + adj
         try:
             return cls.ORDER[new_acc_pos]
@@ -23,11 +23,11 @@ class ACCSYM:
             return acc
 
     @classmethod
-    def incr(cls, acc, amt=1):
+    def incr(cls, acc: str, amt: int = 1) -> str:
         return cls._get_next_acc(acc, amt)
 
     @classmethod
-    def decr(cls, acc, amt=1):
+    def decr(cls, acc: str, amt: int = 1) -> str:
         return cls._get_next_acc(acc, -amt)
 
 
@@ -36,7 +36,7 @@ class NoteNameToScalePos:
     MAP = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
 
     @classmethod
-    def get_relative_scale_pos(cls, cur_note, scale_itvl):
+    def get_relative_scale_pos(cls, cur_note: str, scale_itvl: int) -> Tuple[str, int]:
         assert cur_note in cls.ORDER
         new_note = cls.ORDER[(cls.ORDER.index(cur_note) + scale_itvl - 1) % 7]
         return new_note, cls.MAP[new_note]

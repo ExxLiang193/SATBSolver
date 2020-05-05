@@ -84,7 +84,7 @@ The SATBSolver attempts to generate all solutions in the form of sequences that 
 3. **Model Sync**
    * Initial condition is matched with first chord model.
 4. **Prioritized Breadth-first Search**
-   * For each transition between chord formulae, the transitions that have the smallest amount of semitone changes are checked first. Compared to brute-force checking of all configurations, this approach is 5 - 10 times more efficient as it only checks a subset. All optimal transitions are found.
+   * For each transition between chord formulae, the transitions that have the smallest amount of semitone changes are checked first. Compared to brute-force checking of all configurations, this approach is 5 - 10 times more efficient as it only checks a subset. All optimal transitions which are valid according to validation rules in `model/transition_rules.py` are found.
 5. **Sequence Generation and DP-based Aggregation**
    * Each optimal transition branches off into a new sequence. Since sequences that arrive at the same chord configuration can have a differing number of total semitone changes, the sequence with lower changes is perpetuated.
 6. **Report Optimal Sequences**

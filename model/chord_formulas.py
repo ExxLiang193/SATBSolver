@@ -1,15 +1,14 @@
 import re
 from collections import namedtuple
+from typing import Dict, Set, Tuple
 
 from model.classifications import ACCSYM, INVS, ItvlToSemi, NoteNameToScalePos
 from model.multimap import SimpleBiMap
+from model.nt_def import FreqRange, NotePosPair
 from model.satb_elements import AbstractNote
 
 
 class Chord:
-    KeyPosPair = namedtuple('KeyPosPair', ['scale_pos', 'note_repr'])
-    FreqRange = namedtuple('FreqRange', ['min_freq', 'max_freq'])
-
     def __init__(self, base_note, inv):
         self.base_note = AbstractNote(base_note)
         self.inversion = inv
@@ -18,7 +17,7 @@ class Chord:
     def __repr__(self):
         return str((self.base_note, self.inversion, self.itvls))
 
-    def _infer_note_name(self, scale_itvl, semi_itvl):
+    def _infer_note_name(self, scale_itvl: int, semi_itvl: int) -> str:
         nat_note_name, semi_pos = NoteNameToScalePos.get_relative_scale_pos(
             self.base_note.nat_note, scale_itvl
         )
@@ -27,33 +26,33 @@ class Chord:
             change -= 12
         return nat_note_name + ACCSYM.incr(ACCSYM.NAT, change)
 
-    def get_itvl_note_mapping(self):
+    def get_itvl_note_mapping(self) -> SimpleBiMap:
         mapping = SimpleBiMap()
         for pos, itvl in self.itvls.items():
             mapping.set(pos, AbstractNote(self._infer_note_name(pos, itvl)))
         return mapping
 
-    def get_key_pos_pairs(self):
-        return {self.KeyPosPair(pos, AbstractNote(self._infer_note_name(pos, itvl)))
+    def get_key_pos_pairs(self) -> Set[NotePosPair]:
+        return {NotePosPair(pos, AbstractNote(self._infer_note_name(pos, itvl)))
                 for pos, itvl in self.itvls.items()}
 
-    def get_note_freqs(self):
+    def get_note_freqs(self) -> Dict[int, FreqRange]:
         freqs = {}
         for scale_pos in self.itvls.keys():
-            freqs[scale_pos] = self.FreqRange(
+            freqs[scale_pos] = FreqRange(
                 min_freq=1 if scale_pos in self.ESSENTIAL else 0,
                 max_freq=1 if scale_pos in self.NON_DUP else 3
             )
         return freqs
 
-    def note_count(self):
+    def note_count(self) -> int:
         return len(self.itvls)
 
-    def set_notes(self, *new):
+    def set_notes(self, *new: Tuple[int, int]) -> None:
         for (place, itv) in new:
             self.itvls[place] = itv
 
-    def remove_notes(self, *targets):
+    def remove_notes(self, *targets: int) -> None:
         for place in targets:
             if place in self.itvls:
                 del self.itvls[place]
@@ -66,11 +65,11 @@ class BaseChord(Chord):
         super(BaseChord, self).__init__(base_note, inv)
         self.set_notes((1, ItvlToSemi.UNIS1), (5, ItvlToSemi.PERF5))
 
-    def _get_diff(self, mod):
+    def _get_diff(self, mod: str) -> int:
         assert mod in ('b', '#'), 'Modification to note is invalid'
         return 1 if mod == '#' else -1
 
-    def add_sus(self, itvl):
+    def add_sus(self, itvl: str) -> None:
         if itvl == '2':
             self.remove_notes(3)
             self.set_notes((2, ItvlToSemi.MAJ2))
@@ -80,7 +79,7 @@ class BaseChord(Chord):
         else:
             raise ValueError('Suspended note {} is not of interval 2 or 4'.format(itvl))
 
-    def modify_compound_note(self, mod):
+    def modify_compound_note(self, mod: str) -> None:
         assert hasattr(self, 'COMPOUND_TARGET'), ('Only 9th, 11th, and 13th chords can have '
                                                   'compound note modified')
         diff = self._get_diff(mod)
@@ -90,7 +89,7 @@ class BaseChord(Chord):
         assert scale_pos > 0, 'Added note must be value interval size'
         raise NotImplementedError
 
-    def modify_arbitrary_notes(self, *mod_notes):
+    def modify_arbitrary_notes(self, *mod_notes: str) -> None:
         for note in mod_notes:
             parts = re.search(r'^([b#])(\d+)$', note)
             mod, pos = parts.group(1), int(parts.group(2))
