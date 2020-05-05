@@ -3,8 +3,8 @@ from collections import namedtuple
 from typing import Dict, Set, Tuple
 
 from model.classifications import ACCSYM, INVS, ItvlToSemi, NoteNameToScalePos
+from model.dt_def import FreqRange, NotePosPair
 from model.multimap import SimpleBiMap
-from model.nt_def import FreqRange, NotePosPair
 from model.satb_elements import AbstractNote
 
 

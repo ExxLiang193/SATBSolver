@@ -4,7 +4,7 @@ from itertools import combinations
 from typing import List
 
 from model.chord_formulas import DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord
-from model.nt_def import Transition, TransitionContext
+from model.dt_def import Transition, TransitionContext
 from model.satb_elements import AbstractNote, Note
 
 
@@ -32,20 +32,13 @@ class ValidParallelIntervalRule(AbstractRule):
             lower_trans, upper_trans = trans_pair[0], trans_pair[1]
             if (
                 (
-                    (upper_trans.next_pair.note_repr.abs_pos -
-                     lower_trans.next_pair.note_repr.abs_pos) % 12 ==
-                    (upper_trans.cur_pair.note_repr.abs_pos -
-                     lower_trans.cur_pair.note_repr.abs_pos) % 12
+                    (upper_trans.next_abs_pos - lower_trans.next_abs_pos) % 12 ==
+                    (upper_trans.cur_abs_pos - lower_trans.cur_abs_pos) % 12
                 ) &
                 (
-                    (upper_trans.next_pair.note_repr.abs_pos -
-                     lower_trans.next_pair.note_repr.abs_pos)
+                    (upper_trans.next_abs_pos - lower_trans.next_abs_pos)
                     not in cls.VALID_PARALLEL_INTERVALS
-                ) &
-                (
-                    not (lower_trans.cur_pair.note_repr.abs_pos == 
-                         lower_trans.next_pair.note_repr.abs_pos)
-                )
+                ) & lower_trans.abs_pos_changed
             ):
                 return False
         return True
@@ -59,10 +52,8 @@ class VoicesNotExceedingOctaveNorCrossingRule(AbstractRule):
             upper_trans = matchings[i]
             # There should not any perfect unisons nor intervals exceeding an octave
             if (
-                (upper_trans.next_pair.note_repr.abs_pos -
-                 lower_trans.next_pair.note_repr.abs_pos <= 0) |
-                (upper_trans.next_pair.note_repr.abs_pos -
-                 lower_trans.next_pair.note_repr.abs_pos > 12)
+                (upper_trans.next_abs_pos - lower_trans.next_abs_pos <= 0) |
+                (upper_trans.next_abs_pos - lower_trans.next_abs_pos > 12)
             ):
                 return False
         return True
@@ -94,7 +85,7 @@ class VoicesWithinRangeRule(AbstractRule):
         elif len(matchings) == 6:
             voices = cls.SIX_VOICES
         for trans, voice_range in zip(matchings, voices):
-            if not cls._is_within_range(trans.next_pair.note_repr.abs_pos, voice_range):
+            if not cls._is_within_range(trans.next_abs_pos, voice_range):
                 return False
         return True
 
@@ -114,11 +105,10 @@ class DominantNotesResolvingRule(AbstractRule):
 
     @classmethod
     def _is_within_tolerance(cls, trans, tolerance_set):
-        if trans.cur_pair.scale_pos in tolerance_set:
+        if trans.cur_scale_pos in tolerance_set:
             if (
-                (trans.next_pair.note_repr.abs_pos -
-                 trans.cur_pair.note_repr.abs_pos)
-                not in tolerance_set[trans.cur_pair.scale_pos]
+                (trans.next_abs_pos - trans.cur_abs_pos)
+                not in tolerance_set[trans.cur_scale_pos]
             ):
                 return False
         return True
@@ -142,7 +132,7 @@ class AcceptableNoteFrequenciesRule(AbstractRule):
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
         pos_counter = Counter()
         for trans in matchings:
-            pos_counter[trans.next_pair.scale_pos] += 1
+            pos_counter[trans.next_scale_pos] += 1
         freq_tol = transition_context.next_satb_chord.chord_formula.get_note_freqs()
         for pos, freq_range in freq_tol.items():
             if (

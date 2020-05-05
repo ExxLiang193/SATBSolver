@@ -10,8 +10,8 @@ from model.chord_formulas import (AUGChord, Chord, DIM7Chord, DIMChord,
                                   MAJChord, MIN7Chord, MIN9Chord, MIN11Chord,
                                   MIN13Chord, MINChord)
 from model.classifications import ACCSYM, INVS
+from model.dt_def import FormulaParts
 from model.exceptions import UnknownChordError
-from model.nt_def import FormulaParts
 
 
 class TemplateParser:

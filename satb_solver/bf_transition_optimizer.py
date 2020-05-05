@@ -2,7 +2,7 @@ import heapq
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
-from model.nt_def import MatchConfig, NotePosPair, Transition
+from model.dt_def import MatchConfig, NotePosPair, Transition
 from model.transition_rules import (AcceptableNoteFrequenciesRule,
                                     AllNotesMatchedRule,
                                     DominantNotesResolvingRule,

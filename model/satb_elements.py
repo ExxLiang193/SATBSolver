@@ -1,9 +1,13 @@
-import re
-from typing import List, Tuple
+from __future__ import annotations
 
-# from model.chord_formulas import Chord
+import re
+from typing import TYPE_CHECKING, List, Tuple
+
 from model.classifications import ACCSYM, NoteNameToSemi
-from model.nt_def import NotePosPair
+from model.dt_def import NotePosPair
+
+if TYPE_CHECKING:
+    from model.chord_formulas import Chord
 
 
 class AbstractNote:

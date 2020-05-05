@@ -6,8 +6,8 @@ from itertools import product
 from typing import List, Set, Tuple
 
 from model.chord_formulas import Chord
+from model.dt_def import NotePosPair, Transition, TransitionContext
 from model.exceptions import UnableToTransitionError
-from model.nt_def import NotePosPair, Transition, TransitionContext
 from model.satb_elements import AbstractNote, Note, SATBChord, SATBSequence
 from satb_solver.bf_transition_optimizer import BFTransitionOptimizer
 
