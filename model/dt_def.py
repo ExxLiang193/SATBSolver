@@ -59,6 +59,10 @@ class Transition:
     def abs_pos_changed(self):
         return self.cur_abs_pos != self.next_abs_pos
 
+    @property
+    def abs_pos_diff(self):
+        return abs(self.next_abs_pos - self.cur_abs_pos)
+
 
 @dataclass(frozen=True)
 class MatchConfig:

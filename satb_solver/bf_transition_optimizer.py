@@ -60,7 +60,8 @@ class BFTransitionOptimizer:
         min_cost = 999999
         res = []
         for config in configs:
-            cost = sum(match.min_diff for match in config.matchings.values())
+            cost = sum(match.min_diff if match.min_diff != -1 else match.abs_pos_diff
+                       for match in config.matchings.values())
             if cost < min_cost:
                 min_cost = cost
                 res.clear()

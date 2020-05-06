@@ -31,47 +31,31 @@ python3 solve_satb.py test_harmonies.txt
 
 ## Results
 The result from the `example_input.txt` file is the following. Each solution is an optimal solution that transitions between chords using the fewest number of semitone differences.
-```bash
-Cmaj    Fmaj7    Dmin7    Fdim    G7    Amin    Gmin7    Ebaug    Abmaj
-1       2        3        4       5     6       7        8        9        
+```
+Cmaj    Fmaj_64    Dmin7_42    Ebmaj7_43    Bb7    Baug    Amin7-b5    Dmin_6    Ebdim7    Abmaj7-#3_43    D9    Gmin_6    Cmaj
+1       2          3           4            5      6       7           8         9         10              11    12        13      
 
-4 Optimal Solutions:
+2 Optimal Solutions:
 
-----------------------------------------------------------------------------
-Cost: 44
+-----------------------------------------------------------------------------------------------------------------------------------
+Cost: 100
 
-C5      C5      C5      Cb4     D5      C5      D5      B4      Ab4     
-E4      E4      D4      F4      F4      E4      F4      Eb4     Eb4     
-G3      F3      F3      Ab3     G3      A3      G3      G3      Ab3     
-C3      A2      A2      Cb2     B2      C3      Bb2     B2      C3      
-1       2       3       4       5       6       7       8       9       
-----------------------------------------------------------------------------
-Cost: 44
+C5      C5      D5      Eb5     F5      D#5     Eb5     D5      Eb5     G5      E5      D5      C5      
+E4      F4      F4      G4      Ab4     Fx4     G4      F4      Gb4     Ab4     C5      Bb4     G4      
+G3      A3      A3      D4      D4      D#4     C4      D4      Dbb4    C#4     F#4     G4      E4      
+C3      C3      C3      Bb3     Bb3     B3      A3      F3      Eb3     Eb3     D4      Bb3     C4      
+1       2       3       4       5       6       7       8       9       10      11      12      13      
+-----------------------------------------------------------------------------------------------------------------------------------
+Cost: 100
 
-C5      A4      A4      Cb4     D5      C5      D5      B4      Ab4     
-E4      E4      D4      F4      F4      E4      F4      Eb4     Eb4     
-G3      F3      F3      Ab3     G3      A3      G3      G3      Ab3     
-C3      C3      C3      Cb2     B2      C3      Bb2     B2      C3      
-1       2       3       4       5       6       7       8       9       
-----------------------------------------------------------------------------
-Cost: 44
+C5      C5      D5      Eb5     F5      D#5     C5      D5      Eb5     G5      E5      D5      C5      
+E4      F4      F4      G4      Ab4     Fx4     G4      F4      Gb4     Ab4     C5      Bb4     G4      
+G3      A3      A3      D4      D4      D#4     Eb4     D4      Dbb4    C#4     F#4     G4      E4      
+C3      C3      C3      Bb3     Bb3     B3      A3      F3      Eb3     Eb3     D4      Bb3     C4      
+1       2       3       4       5       6       7       8       9       10      11      12      13      
+-----------------------------------------------------------------------------------------------------------------------------------
 
-C5      C5      C5      Cb4     B4      C5      D5      B4      Ab4     
-E4      E4      D4      F4      F4      E4      F4      Eb4     Eb4     
-G3      F3      F3      Ab3     G3      A3      G3      G3      Ab3     
-C3      A2      A2      Cb2     D3      C3      Bb2     B2      C3      
-1       2       3       4       5       6       7       8       9       
-----------------------------------------------------------------------------
-Cost: 44
-
-C5      A4      A4      Cb4     B4      C5      D5      B4      Ab4     
-E4      E4      D4      F4      F4      E4      F4      Eb4     Eb4     
-G3      F3      F3      Ab3     G3      A3      G3      G3      Ab3     
-C3      C3      C3      Cb2     D3      C3      Bb2     B2      C3      
-1       2       3       4       5       6       7       8       9       
-----------------------------------------------------------------------------
-
-Solutions generated in: 0.11228 sec
+Solutions generated in: 0.17556 sec
 ```
 
 ## Implementation

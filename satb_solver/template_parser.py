@@ -74,6 +74,7 @@ class TemplateParser:
 
         base_chord = self._resolve_base_match(parts)
         full_chord = self._resolve_modifications(base_chord, parts)
+        full_chord.annotate(chord_formula)
         return full_chord
 
     def parse_template(self, template: List[str]) -> Iterator[Chord]:

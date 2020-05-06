@@ -45,6 +45,9 @@ class Chord:
             )
         return freqs
 
+    def annotate(self, formula_name: str) -> None:
+        self.formula_name = formula_name
+
     def note_count(self) -> int:
         return len(self.itvls)
 

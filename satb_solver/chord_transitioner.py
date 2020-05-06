@@ -158,8 +158,8 @@ class ChordTransitioner:
                             for satb_chord in results]
                 next_seqs.extend(new_seqs)
             if len(next_seqs) == 0:
-                raise UnableToTransitionError('Unable to transition between:\n{}\nand\n{}'.format(
-                    chord_seq[i - 1], chord_seq[i]
+                raise UnableToTransitionError('Unable to transition between: {} and {}'.format(
+                    chord_seq[i - 1].formula_name, chord_seq[i].formula_name
                 ))
             if i < len(chord_seq) - 1:
                 queued_seqs = self._get_agg_min_cost_seqs(next_seqs)
