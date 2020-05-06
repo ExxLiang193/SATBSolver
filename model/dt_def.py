@@ -73,3 +73,11 @@ class MatchConfig:
 class TransitionContext:
     cur_satb_chord: SATBChord
     next_satb_chord: SATBChord
+
+    @property
+    def cur_chord_formula(self):
+        return self.cur_satb_chord.chord_formula
+
+    @property
+    def next_chord_formula(self):
+        return self.next_satb_chord.chord_formula

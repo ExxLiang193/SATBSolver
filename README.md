@@ -32,30 +32,22 @@ python3 solve_satb.py test_harmonies.txt
 ## Results
 The result from the `example_input.txt` file is the following. Each solution is an optimal solution that transitions between chords using the fewest number of semitone differences.
 ```
-Cmaj    Fmaj_64    Dmin7_42    Ebmaj7_43    Bb7    Baug    Amin7-b5    Dmin_6    Ebdim7    Abmaj7-#3_43    D9    Gmin_6    Cmaj
-1       2          3           4            5      6       7           8         9         10              11    12        13      
+Cmaj    Fmaj_64    Dmin7_42    Ebmaj7_43    Bb7    Baug    Abmin7-b5_42    Dmin_6    Ebdim7    Abmaj7-#3_43    Gmaj-sus    G13    Cmaj
+1       2          3           4            5      6       7               8         9         10              11          12     13      
 
-2 Optimal Solutions:
+1 Optimal Solution:
 
------------------------------------------------------------------------------------------------------------------------------------
-Cost: 100
+-------------------------------------------------------------------------------------------------------------------------------------------
+Cost: 93
 
-C5      C5      D5      Eb5     F5      D#5     Eb5     D5      Eb5     G5      E5      D5      C5      
-E4      F4      F4      G4      Ab4     Fx4     G4      F4      Gb4     Ab4     C5      Bb4     G4      
-G3      A3      A3      D4      D4      D#4     C4      D4      Dbb4    C#4     F#4     G4      E4      
-C3      C3      C3      Bb3     Bb3     B3      A3      F3      Eb3     Eb3     D4      Bb3     C4      
+C5      C5      D5      Eb5     F5      Fx5     Ab5     A5      Gb5     C#5     C5      B4      C5      
+E4      F4      F4      G4      Ab4     Fx4     Cb4     A4      Bbb4    G4      G4      F4      E4      
+G3      A3      A3      D4      D4      D#4     Ebb4    D4      Dbb4    Ab3     D4      E4      C4      
+C3      C3      C3      Bb3     Bb3     B3      Gb3     F3      Eb3     Eb3     G3      G3      C3      
 1       2       3       4       5       6       7       8       9       10      11      12      13      
------------------------------------------------------------------------------------------------------------------------------------
-Cost: 100
+-------------------------------------------------------------------------------------------------------------------------------------------
 
-C5      C5      D5      Eb5     F5      D#5     C5      D5      Eb5     G5      E5      D5      C5      
-E4      F4      F4      G4      Ab4     Fx4     G4      F4      Gb4     Ab4     C5      Bb4     G4      
-G3      A3      A3      D4      D4      D#4     Eb4     D4      Dbb4    C#4     F#4     G4      E4      
-C3      C3      C3      Bb3     Bb3     B3      A3      F3      Eb3     Eb3     D4      Bb3     C4      
-1       2       3       4       5       6       7       8       9       10      11      12      13      
------------------------------------------------------------------------------------------------------------------------------------
-
-Solutions generated in: 0.17556 sec
+Solutions generated in: 0.08413 sec
 ```
 
 ## Implementation
@@ -75,11 +67,11 @@ The SATBSolver attempts to generate all solutions in the form of sequences that 
    * The globally optimal sequence solutions are found and outputted to the terminal as seen in the [Results](#results) section.
 
 ## TODO
-* Allow user to choose intermediate chord configurations to reduce the number of final optimal solutions.
-* Use library/software to display solutions on staves rather than in terminal.
-* Fully implement support for all chord modifications (infrastructure already exists for it).
-* Fully implement support for 5- and 6-part harmony (infrastructure already exists for it).
-* Fix base note of chords so they aren't manipulated during transition optimization.
+- [ ] Allow user to choose intermediate chord configurations to reduce the number of final optimal solutions.
+- [ ] Use library/software to display solutions on staves rather than in terminal.
+- [x] Fully implement support for all chord modifications (*except* add-on notes).
+- [ ] Fully implement support for 5- and 6-part harmony (infrastructure already exists for it).
+- [x] Fix base note of chords so they aren't manipulated during transition optimization.
 
 ## Support
 Currently only works for 4-part harmony. Infrastructure exists to execute 5- or 6-part harmony but there are hardcoded restrictions that will raise an error.

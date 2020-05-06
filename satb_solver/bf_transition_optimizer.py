@@ -23,10 +23,7 @@ class BFTransitionOptimizer:
         self, config_matchings: Dict[int, Transition]
     ) -> Tuple[Transition, ...]:
         return tuple(
-            sorted(
-                config_matchings.values(),
-                key=lambda trans: trans.cur_pair.note_repr.abs_pos
-            )
+            sorted(config_matchings.values(), key=lambda trans: trans.cur_abs_pos)
         )
 
     def _add_to_next_depth(self, new_config: MatchConfig) -> None:
@@ -38,7 +35,7 @@ class BFTransitionOptimizer:
     def _is_valid_config(self, config: MatchConfig) -> Any:
         ordered_matchings = sorted(
             [trans for trans in config.matchings.values()],
-            key=lambda trans: trans.cur_pair.note_repr.abs_pos
+            key=lambda trans: trans.cur_abs_pos
         )
         for validator in [
             AllNotesMatchedRule,
@@ -77,26 +74,20 @@ class BFTransitionOptimizer:
                 self.next_depth_configs = []
                 if len(self.cur_depth_configs) == 0:
                     self._add_to_next_depth(
-                        MatchConfig(
-                            matchings={test_trans.cur_pair.note_repr.abs_pos: test_trans}
-                        )
+                        MatchConfig(matchings={test_trans.cur_abs_pos: test_trans})
                     )
                 else:
                     for cur_depth_config in self.cur_depth_configs:
                         if diff == -1:
                             self.next_depth_configs.append(cur_depth_config)
                             self._add_to_next_depth(
-                                MatchConfig(
-                                    matchings={test_trans.cur_pair.note_repr.abs_pos: test_trans}
-                                )
+                                MatchConfig(matchings={test_trans.cur_abs_pos: test_trans})
                             )
                             continue
-                        if test_trans.cur_pair.note_repr.abs_pos in cur_depth_config.matchings:
+                        if test_trans.cur_abs_pos in cur_depth_config.matchings:
                             self.next_depth_configs.append(cur_depth_config)
                         cur_depth_config_matchings = cur_depth_config.matchings.copy()
-                        cur_depth_config_matchings[
-                            test_trans.cur_pair.note_repr.abs_pos
-                        ] = test_trans
+                        cur_depth_config_matchings[test_trans.cur_abs_pos] = test_trans
                         self._add_to_next_depth(
                             MatchConfig(matchings=cur_depth_config_matchings)
                         )

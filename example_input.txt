@@ -5,10 +5,10 @@ Dmin7_42
 Ebmaj7_43
 Bb7
 Baug
-Amin7-b5
+Abmin7-b5_42
 Dmin_6
 Ebdim7
 Abmaj7-#3_43
-D9
-Gmin_6
+Gmaj-sus
+G13
 Cmaj

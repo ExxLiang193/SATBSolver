@@ -6,11 +6,13 @@ from model.classifications import ACCSYM, INVS, ItvlToSemi, NoteNameToScalePos
 from model.dt_def import FreqRange, NotePosPair
 from model.multimap import SimpleBiMap
 from model.satb_elements import AbstractNote
+from model.solver_config import get_config
 
 
 class Chord:
     def __init__(self, base_note, inv):
         self.base_note = AbstractNote(base_note)
+        self.base_ess = self.ESSENTIAL
         self.inversion = inv
         self.itvls = {}
 
@@ -36,12 +38,12 @@ class Chord:
         return {NotePosPair(pos, AbstractNote(self._infer_note_name(pos, itvl)))
                 for pos, itvl in self.itvls.items()}
 
-    def get_note_freqs(self) -> Dict[int, FreqRange]:
+    def get_note_freqs(self, exc=False) -> Dict[int, FreqRange]:
         freqs = {}
         for scale_pos in self.itvls.keys():
             freqs[scale_pos] = FreqRange(
-                min_freq=1 if scale_pos in self.ESSENTIAL else 0,
-                max_freq=1 if scale_pos in self.NON_DUP else 3
+                min_freq=1 if scale_pos in (self.CAD_ESSENTIAL if exc else self.base_ess) else 0,
+                max_freq=1 if scale_pos in self.NON_DUP else (3 if exc else 2)
             )
         return freqs
 
@@ -60,6 +62,19 @@ class Chord:
             if place in self.itvls:
                 del self.itvls[place]
 
+    def add_ess_notes(self, target: int) -> None:
+        self.base_ess |= {target}
+        assert len(self.base_ess) <= get_config()['voice_count'], (
+            'Number of essential notes exceeded when requiring note at pos {}'.format(target)
+        )
+
+    def replace_ess_notes(self, old: int, new: int) -> None:
+        self.base_ess = self.base_ess - {old} | {new}
+        assert len(self.base_ess) <= get_config()['voice_count'], (
+            'Number of essential notes exceeded when replacing note requirement from '
+            'pos {} to pos {}'
+        ).format(old, new)
+
 
 class BaseChord(Chord):
     ESSENTIAL = {1}
@@ -73,13 +88,15 @@ class BaseChord(Chord):
         return 1 if mod == '#' else -1
 
     def add_sus(self, itvl: str) -> None:
-        assert self.inv == INVS.ROOT, 'Cannot add sustained note to non-root inversion'
+        assert self.inversion == INVS.ROOT, 'Cannot add sustained note to non-root inversion'
         if itvl == '2':
             self.remove_notes(3)
             self.set_notes((2, ItvlToSemi.MAJ2))
+            self.replace_ess_notes(3, 2)
         elif itvl == '4' or itvl is None:
             self.remove_notes(3)
             self.set_notes((4, ItvlToSemi.PERF4))
+            self.replace_ess_notes(3, 4)
         else:
             raise ValueError('Suspended note {} is not of interval 2 or 4'.format(itvl))
 
@@ -99,12 +116,14 @@ class BaseChord(Chord):
             mod, pos = parts.group(1), int(parts.group(2))
             diff = self._get_diff(mod)
             self.set_notes((pos, self.itvls[pos] + diff))
+            self.add_ess_notes(pos)
 
 # TRIADS
 
 
 class Triad:
-    ESSENTIAL = BaseChord.ESSENTIAL | {3}
+    ESSENTIAL = BaseChord.ESSENTIAL | {3, 5}
+    CAD_ESSENTIAL = BaseChord.ESSENTIAL | {3}
     NON_DUP = {}
 
     def get_base_with_inv(self):
@@ -145,7 +164,7 @@ class AUGChord(Triad, BaseChord):
 
 
 class COMP7Chord:
-    ESSENTIAL = Triad.ESSENTIAL | {7}
+    ESSENTIAL = BaseChord.ESSENTIAL | {3, 7}
     NON_DUP = {3, 7}
 
     def get_base_with_inv(self):

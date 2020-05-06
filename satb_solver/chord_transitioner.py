@@ -3,7 +3,7 @@ import re
 from collections import namedtuple
 from copy import deepcopy
 from itertools import product
-from typing import List, Set, Tuple
+from typing import Dict, List, Set, Tuple
 
 from model.chord_formulas import Chord
 from model.dt_def import NotePosPair, Transition, TransitionContext
@@ -35,7 +35,8 @@ class ChordTransitioner:
         else:
             return (upper_abs_note - abs_note, {upper_abs_note})
 
-    def _agg_trans(self, cur_abs_note, next_rel_note, trans_agg, full=False):
+    def _agg_trans(self, cur_abs_note: NotePosPair, next_rel_note: NotePosPair,
+                   trans_agg: Dict[int, Set[Transition]], full=False) -> None:
         min_transition_diff, min_diff_notes = (
             self._min_diff(
                 cur_abs_note.note_repr.abs_pos,
@@ -56,7 +57,8 @@ class ChordTransitioner:
             else:
                 trans_agg[min_transition_diff] = {new_transition}
 
-    def _split_by_base(self, pairs, chord_formula):
+    def _split_by_base(self, pairs: List[NotePosPair],
+                       chord_formula: Chord) -> Tuple[NotePosPair, List[NotePosPair]]:
         formula_base = chord_formula.get_base_with_inv()
         base_pair = [pair for pair in pairs if pair.note_repr.semi_pos == formula_base.semi_pos]
         if len(base_pair) >= 2:

@@ -3,7 +3,8 @@ from collections import Counter
 from itertools import combinations
 from typing import List
 
-from model.chord_formulas import DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord
+from model.chord_formulas import (DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord,
+                                  MAJChord, MINChord)
 from model.dt_def import Transition, TransitionContext
 from model.satb_elements import AbstractNote, Note
 from model.solver_config import get_config
@@ -91,15 +92,15 @@ class VoicesWithinRangeRule(AbstractRule):
 
 class DominantNotesResolvingRule(AbstractRule):
     DOM_TOL = {
-        3: {1},
-        7: {-2, -1},
-        9: {-2, -1},
+        3: {*range(0, 2)},
+        7: {*range(0, -3, -1)},
+        9: {*range(0, -3, -1)},
         11: {0},
-        13: {0, -1, -2, -3, -4}
+        13: {*range(0, -5, -1)}
     }
     SUS_TOL = {
-        2: {1, 2},
-        4: {-2, -1}
+        2: {*range(1, 3)},
+        4: {*range(-1, -3, -1)}
     }
 
     @classmethod
@@ -115,7 +116,7 @@ class DominantNotesResolvingRule(AbstractRule):
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
         cur_chord = transition_context.cur_satb_chord
-        if any(isinstance(cur_chord.chord_formula, chord_type)
+        if any(type(cur_chord.chord_formula) is chord_type
                for chord_type in (DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord)):
             for trans in matchings:
                 if not cls._is_within_tolerance(trans, cls.DOM_TOL):
@@ -132,7 +133,21 @@ class AcceptableNoteFrequenciesRule(AbstractRule):
         pos_counter = Counter()
         for trans in matchings:
             pos_counter[trans.next_scale_pos] += 1
-        freq_tol = transition_context.next_satb_chord.chord_formula.get_note_freqs()
+        exc = (
+            (
+                any(
+                    type(transition_context.cur_chord_formula) is chord_type
+                    for chord_type in (DOM7Chord, DOM11Chord, DOM13Chord)
+                )
+            ) &
+            (
+                any(
+                    type(transition_context.next_chord_formula) is chord_type
+                    for chord_type in (MAJChord, MINChord)
+                )
+            )
+        )
+        freq_tol = transition_context.next_satb_chord.chord_formula.get_note_freqs(exc)
         for pos, freq_range in freq_tol.items():
             if (
                 (pos_counter.get(pos, 0) < freq_range.min_freq) |
