@@ -20,4 +20,6 @@ def get_config():
         try:
             return yaml.safe_load(yamlf)
         except yaml.YAMLError as exc:
+            print('Error while parsing {}:'.format(CONFIG_FILE_NAME))
             print(exc)
+            sys.exit()

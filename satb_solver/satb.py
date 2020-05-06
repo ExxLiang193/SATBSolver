@@ -40,7 +40,8 @@ class SATBSolver:
         print('\n')
 
         seq_spaces = 8
-        print("{} Optimal Solutions:".format(len(solution_seqs)))
+        sol_num = len(solution_seqs)
+        print("{} Optimal Solution{}:".format(sol_num, '' if sol_num == 1 else 's'))
         print()
         for sol in solution_seqs:
             print('-' * width)

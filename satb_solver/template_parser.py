@@ -29,7 +29,7 @@ class TemplateParser:
             (?:-(add\d+|                    # Independant added note
             [b#]\d+|                        # One note modification
             \([b#]\d+(?:,[b#]\d+)*\)))?     # Multiple note modification
-            (?:_(6|43|42))?                 # Inversion
+            (?:_(6|64|65|43|42))?           # Inversion
             $""", re.VERBOSE)
 
     def _resolve_base_match(self, parts: FormulaParts) -> Chord:
@@ -86,9 +86,8 @@ class TemplateParser:
 
     def parse_init_cond(self, init_notes: List[str]) -> Iterator[str]:
         notes = init_notes.split()
-        global_settings = get_config()
-        assert len(notes) == global_settings['voice_count'], (
-            'Initial SATB harmony is not {}-part'.format(global_settings['voice_count'])
+        assert len(notes) == get_config()['voice_count'], (
+            'Initial SATB harmony is not {}-part'.format(get_config()['voice_count'])
         )
         for note_str in notes:
             yield note_str

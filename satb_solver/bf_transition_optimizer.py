@@ -82,6 +82,14 @@ class BFTransitionOptimizer:
                     )
                 else:
                     for cur_depth_config in self.cur_depth_configs:
+                        if diff == -1:
+                            self.next_depth_configs.append(cur_depth_config)
+                            self._add_to_next_depth(
+                                MatchConfig(
+                                    matchings={test_trans.cur_pair.note_repr.abs_pos: test_trans}
+                                )
+                            )
+                            continue
                         if test_trans.cur_pair.note_repr.abs_pos in cur_depth_config.matchings:
                             self.next_depth_configs.append(cur_depth_config)
                         cur_depth_config_matchings = cur_depth_config.matchings.copy()

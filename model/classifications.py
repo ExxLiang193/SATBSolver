@@ -81,6 +81,10 @@ ItvlToSemi.setup()
 
 class INVS:
     ROOT = 0
-    FIRST = 6
-    SECOND = 43
-    THIRD = 42
+
+    TRI_FIRST = 6
+    TRI_SECOND = 64
+
+    SEV_FIRST = 65
+    SEV_SECOND = 43
+    SEV_THIRD = 42

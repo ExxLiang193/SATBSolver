@@ -19,8 +19,7 @@ class AbstractRule(ABC):
 class AllNotesMatchedRule(AbstractRule):
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
-        global_settings = get_config()
-        return len(matchings) == global_settings['voice_count']
+        return len(matchings) == get_config()['voice_count']
 
 
 class ValidParallelIntervalRule(AbstractRule):
@@ -47,7 +46,7 @@ class ValidParallelIntervalRule(AbstractRule):
 class VoicesNotExceedingOctaveNorCrossingRule(AbstractRule):
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
-        for i in range(2, len(matchings)):
+        for i in range(1, len(matchings)):
             lower_trans = matchings[i - 1]
             upper_trans = matchings[i]
             # There should not any perfect unisons nor intervals exceeding an octave

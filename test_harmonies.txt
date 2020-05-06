@@ -1,10 +1,10 @@
-C3 G3 E4 C5
-Cmaj
-Fmaj7
-Dmin7
+E3 G3 E4 C5
+Cmaj_6
+Fmaj7_43
+Dmin7_42
 Fdim
 G7
-Amin
-Gmin7
+Amin_64
+Gmin7_65
 Ebaug
 Abmaj

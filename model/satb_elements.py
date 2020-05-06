@@ -15,7 +15,7 @@ class AbstractNote:
         assert isinstance(note_str, str)
         self._parse_note_str(note_str)
 
-    def _key(self):
+    def _key(self) -> Tuple[str, int]:
         return tuple((self.note_name, self.semi_pos))
 
     def __repr__(self):

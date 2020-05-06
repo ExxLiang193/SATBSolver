@@ -70,6 +70,7 @@ class BaseChord(Chord):
         return 1 if mod == '#' else -1
 
     def add_sus(self, itvl: str) -> None:
+        assert self.inv == INVS.ROOT, 'Cannot add sustained note to non-root inversion'
         if itvl == '2':
             self.remove_notes(3)
             self.set_notes((2, ItvlToSemi.MAJ2))
@@ -103,6 +104,16 @@ class Triad:
     ESSENTIAL = BaseChord.ESSENTIAL | {3}
     NON_DUP = {}
 
+    def get_base_with_inv(self):
+        if self.inversion == INVS.ROOT:
+            return self.get_itvl_note_mapping().get(1)
+        elif self.inversion == INVS.TRI_FIRST:
+            return self.get_itvl_note_mapping().get(3)
+        elif self.inversion == INVS.TRI_SECOND:
+            return self.get_itvl_note_mapping().get(5)
+        else:
+            raise ValueError('Invalid inversion {} encountered'.format(self.inversion))
+
 
 class MAJChord(Triad, BaseChord):
     def __init__(self, base_note, inv):
@@ -133,6 +144,18 @@ class AUGChord(Triad, BaseChord):
 class COMP7Chord:
     ESSENTIAL = Triad.ESSENTIAL | {7}
     NON_DUP = {3, 7}
+
+    def get_base_with_inv(self):
+        if self.inversion == INVS.ROOT:
+            return self.get_itvl_note_mapping().get(1)
+        elif self.inversion == INVS.SEV_FIRST:
+            return self.get_itvl_note_mapping().get(3)
+        elif self.inversion == INVS.SEV_SECOND:
+            return self.get_itvl_note_mapping().get(5)
+        elif self.inversion == INVS.SEV_THIRD:
+            return self.get_itvl_note_mapping().get(7)
+        else:
+            raise ValueError('Invalid inversion {} encountered'.format(self.inversion))
 
 
 class MAJ7Chord(COMP7Chord, MAJChord):
