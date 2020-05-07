@@ -19,7 +19,7 @@ pip install -r requirements.txt
 ## Running the SATBSolver
 See `example_input.txt` in project directory for example input format. Write your input into `test_harmonies.txt`.
 * First line of input is the initial state to start the solving process.
-  * Write in 4 notes (may change in the future). For reference, middle C is `C4`, and the nearest `B` is `B3`.
+  * Write in 4 notes (see [here](#satbsolver-global-settings) for details). For reference, middle C is `C4`, and the nearest `B` is `B3`.
   * Keep all initial notes on one line.
 * The following lines are chord formulae. These follow conventional formula formats. See the property `formula_matcher` in [satb_solver/template_parser.py](satb_solver/template_parser.py) for the specific syntax or see below for a simpler explanation.
   * The first chord formula MUST match the initial condition. Validation has not been implemented for it yet.
@@ -95,8 +95,5 @@ The SATBSolver attempts to generate all solutions in the form of sequences that 
 - [ ] Allow user to choose intermediate chord configurations to reduce the number of final optimal solutions.
 - [ ] Use library/software to display solutions on staves rather than in terminal.
 - [x] Fully implement support for all chord modifications (*except* add-on notes).
-- [ ] Fully implement support for 5- and 6-part harmony (infrastructure already exists for it).
+- [x] Fully implement support for 5- and 6-part harmony (infrastructure already exists for it).
 - [x] Fix base note of chords so they aren't manipulated during transition optimization.
-
-## Support
-Currently only works for 4-part harmony. Infrastructure exists to execute 5- or 6-part harmony but there are hardcoded restrictions that will raise an error.
