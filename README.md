@@ -75,6 +75,8 @@ C3      C3      C3      Bb3     Bb3     B3      Gb3     F3      Eb3     Eb3     
 Solutions generated in: 0.08413 sec
 ```
 
+To see other examples with more voices, check out the [examples](examples/) directory.
+
 ## Implementation
 The SATBSolver attempts to generate all solutions in the form of sequences that minimize the semitone change difference between chords in the initial chord formula template. Here is the process which it undergoes:
 1. **Input Reading**
