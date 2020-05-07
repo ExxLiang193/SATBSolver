@@ -17,12 +17,37 @@ pip install -r requirements.txt
 ```
 
 ## Running the SATBSolver
-See `example_input.txt` in project directory for input format. Write your input into `test_harmonies.txt`.
+See `example_input.txt` in project directory for example input format. Write your input into `test_harmonies.txt`.
 * First line of input is the initial state to start the solving process.
   * Write in 4 notes (may change in the future). For reference, middle C is `C4`, and the nearest `B` is `B3`.
   * Keep all initial notes on one line.
-* The following lines are chord formulae. These follow conventional formula formats. See the property `formula_matcher` in `satb_solver/template_parser.py` for the specific syntax.
+* The following lines are chord formulae. These follow conventional formula formats. See the property `formula_matcher` in [satb_solver/template_parser.py](satb_solver/template_parser.py) for the specific syntax or see below for a simpler explanation.
   * The first chord formula MUST match the initial condition. Validation has not been implemented for it yet.
+
+### Formula Format
+The chord formula is composed of the following parts **in order**:
+
+| Component | Syntax | Example Usage | Description | Inclusion Symbol | Required |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Natural base note | `A`-`G` | `Fmaj` | Base natural note for chord formula (may not be base note for SATB chord after inversion is applied). | None | Yes |
+| Base note accidental | `b` or `#` | `C#min` | Accidental for base formula note. Note that `bb` and `x` cannot be given. | None | No |
+| Base triad | one of `min`, `maj`, `aug`, `dim` | `A#aug` | Basic third and fifth interval composition of chord. | None | Yes |
+| Compound note accidental | `b` or `#` | `Dmin#11` | Modifies the compound chord note by either raising it or dropping it by a semitone. Note that `D#9` is ambiguous and will be interpreted as a 9th chord with base `D#`. Use single-note modification if the other case is intended. | None | No |
+| Compound note | one of `7`, `9`, `11`, `13` | `C#7` | Specifies compound chord. Can be combined with base triads. No inclusion of `min`, `maj`, or `dim` implies dominant chord. | None | No |
+| Sustained note | one of `sus`, `sus2`, `sus4` | `Amin-sus4` | Replaces third interval with either a major second or a perfect fourth. No number implies perfect fourth suspension. | `-` | No |
+| Added note | `add` + `1`-`13` | `E7-add2` | _Not implemented yet._ | `-` | No |
+| Single-note modification | `b` or `#` + `<chord position>` | `F9-#5` | Only either single- or multi-note modification can be done. Modifies any note already in chord by raising/lowering it by a semitone. | `-` | No |
+| Multi-note modification | (`<single note mod>`, ...) | `D11-(b5,b9)` | Only either single- or multi-note modification can be done. Modifies several notes already in chord by raising/lowering it by a semitone. | `-` | No |
+| Inversion | one of `6`, `64`, `65`, `43`, `42` | `Cmaj_6`, `Dmin7_43` | Specifies inversion of chord. No specification implies root inversion. | `_` (underscore) | No |
+
+_See [Results](#results) for some examples._
+
+### SATBSolver Global Settings
+In [solver_config.yaml](solver_config.yaml), the following modifiable settings are offered:
+* _voice_count_: Number of voices in input. [4-6]
+* _include_inv_: When True, the solver will ensure that the base note of each chord matches the inversion of each chord formula. Otherwise, solver simply chooses the optimal base note. [True/False]
+* _user_intermed_: When True, allows user to choose transition for each chord, when given options by solver. Otherwise, generates all optimal solutions. [True/False]
+  * _Not implemented yet_
 
 To run your input, call:
 ```bash
@@ -75,5 +100,3 @@ The SATBSolver attempts to generate all solutions in the form of sequences that 
 
 ## Support
 Currently only works for 4-part harmony. Infrastructure exists to execute 5- or 6-part harmony but there are hardcoded restrictions that will raise an error.
-
-Currently only a subset of chord modifications will properly work. The amount of code changes to make this work is small, but I'll get to it when I have the time.
