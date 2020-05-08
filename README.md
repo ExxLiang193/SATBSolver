@@ -94,7 +94,7 @@ The SATBSolver attempts to generate all solutions in the form of sequences that 
    * The globally optimal sequence solutions are found and outputted to the terminal as seen in the [Results](#results) section.
 
 ## TODO
-- [ ] Allow user to choose intermediate chord configurations to reduce the number of final optimal solutions.
+- [x] Allow user to choose intermediate chord configurations to reduce the number of final optimal solutions.
 - [ ] Use library/software to display solutions on staves rather than in terminal.
 - [x] Fully implement support for all chord modifications (*except* add-on notes).
 - [x] Fully implement support for 5- and 6-part harmony (infrastructure already exists for it).
