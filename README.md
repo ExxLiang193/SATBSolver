@@ -44,10 +44,9 @@ _See [Results](#results) for some examples._
 
 ### SATBSolver Global Settings
 In [solver_config.yaml](solver_config.yaml), the following modifiable settings are offered:
-* _voice_count_: Number of voices in input. [4-6]
-* _include_inv_: When True, the solver will ensure that the base note of each chord matches the inversion of each chord formula. Otherwise, solver simply chooses the optimal base note. [True/False]
-* _user_intermed_: When True, allows user to choose transition for each chord, when given options by solver. Otherwise, generates all optimal solutions. [True/False]
-  * _Not implemented yet_
+* `voice_count`: Number of voices in input. **[4-6]**
+* `include_inv`: When True, the solver will ensure that the base note of each chord matches the inversion of each chord formula. Otherwise, solver simply chooses the optimal base note. **[True/False]**
+* `user_intermed`: When True, allows user to choose transition for each chord, when given options by solver. Otherwise, generates all optimal solutions. See [Results](#results) section for both cases. **[True/False]**
 
 To run your input, call:
 ```bash
@@ -55,7 +54,7 @@ python3 solve_satb.py test_harmonies.txt
 ```
 
 ## Results
-The result from the `example_input.txt` file is the following. Each solution is an optimal solution that transitions between chords using the fewest number of semitone differences.
+The result from the `example_input.txt` file is the following **without user intervention**. Each solution is an optimal solution that transitions between chords using the fewest number of semitone differences.
 ```
 Cmaj    Fmaj_64    Dmin7_42    Ebmaj7_43    Bb7    Baug    Abmin7-b5_42    Dmin_6    Ebdim7    Abmaj7-#3_43    Gmaj-sus    G13    Cmaj
 1       2          3           4            5      6       7               8         9         10              11          12     13      
@@ -73,6 +72,22 @@ C3      C3      C3      Bb3     Bb3     B3      Gb3     F3      Eb3     Eb3     
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 Solutions generated in: 0.08413 sec
+```
+
+With the global setting `user_intermed` set to `True`, the following is an example of an intermediate step that requires user intervention:
+```
+3 Optimal Options: Ab7_65 -> Bbmin_6
+--------------------------------------------------------
+
+Eb5             ⎡       Db5     Bb4     Bb4      ⎤      
+Gb4             ⎢       F4      F4      F4       ⎥      
+Ab3      -->    ⎢       Bb3     F3      Bb3      ⎥      
+Eb3             ⎢       Bb2     Db3     Db3      ⎥      
+Ab2             ⎢       F2      Bb2     F2       ⎥      
+C2              ⎣       Db2     Db2     Db2      ⎦      
+                        1       2       3       
+--------------------------------------------------------
+Choose transition (type "back" or number of choice): 
 ```
 
 To see other examples with more voices, check out the [examples](examples/) directory.

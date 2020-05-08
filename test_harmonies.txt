@@ -1,14 +1,11 @@
-C3 G3 E4 C5
+E5 G4 C4 E3 G2 C2
 Cmaj
-Fmaj_64
 Dmin7_42
-Ebmaj7_43
-Bb7
-Baug
-Abmin7-b5_42
-Dmin_6
-Ebdim7
-Abmaj7-#3_43
-Gmaj-sus
-G13
+G7_65
+Amin_6
+Fmaj_64
+Cmaj7-#5
+Ab7_65
+Bbmin_6
+G7_43
 Cmaj
