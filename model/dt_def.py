@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, Union
+from typing import TYPE_CHECKING, Dict, List, Union
 
 if TYPE_CHECKING:
     from model.satb_elements import AbstractNote, Note, SATBChord
@@ -81,3 +81,11 @@ class TransitionContext:
     @property
     def next_chord_formula(self):
         return self.next_satb_chord.chord_formula
+
+
+@dataclass
+class ChordNode:
+    prev_node: 'ChordNode'
+    chord: SATBChord
+    next_nodes: List['ChordNode']
+    cost: int

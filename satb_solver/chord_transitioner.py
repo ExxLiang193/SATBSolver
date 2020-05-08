@@ -2,15 +2,19 @@ import heapq
 import re
 from collections import namedtuple
 from copy import deepcopy
+from dataclasses import dataclass
 from itertools import product
 from typing import Dict, List, Set, Tuple
 
+from termcolor import colored
+
 from model.chord_formulas import Chord
-from model.dt_def import NotePosPair, Transition, TransitionContext
+from model.dt_def import ChordNode, NotePosPair, Transition, TransitionContext
 from model.exceptions import UnableToTransitionError
 from model.satb_elements import AbstractNote, Note, SATBChord, SATBSequence
 from model.solver_config import get_config
 from satb_solver.bf_transition_optimizer import BFTransitionOptimizer
+from satb_solver.solution_interface import SolutionInterface
 
 
 class ChordTransitioner:
@@ -147,7 +151,9 @@ class ChordTransitioner:
         assert len(chord_seq) >= 1, 'No chord formulas were specified in template'
         init_notes = self._infer_init_note_pos(init_notes, chord_seq[0])
 
-        queued_seqs = [SATBSequence(SATBChord(chord_seq[0], init_notes))]
+        queued_seqs = [SATBSequence().add_satb_chord(
+            SATBChord(chord_seq[0], init_notes), 0
+        )]
         for i in range(1, len(chord_seq)):
             next_seqs = []
             for cur_seq in queued_seqs:
@@ -169,15 +175,39 @@ class ChordTransitioner:
                 queued_seqs = self._get_abs_min_cost_seqs(next_seqs)
         return queued_seqs
 
-    # def user_transition_chords(self, chord_seq, init_notes):
-    #     chord_seq = list(chord_seq)
-    #     assert len(chord_seq) >= 1, 'No chord formulas were specified in template'
+    def user_transition_chords(self, chord_seq, init_notes):
+        chord_seq = list(chord_seq)
+        assert len(chord_seq) >= 1, 'No chord formulas were specified in template'
+        init_notes = self._infer_init_note_pos(init_notes, chord_seq[0])
 
-    #     cur_chord = SATBChord(chord_seq[0], list(init_notes))
-    #     for i in range(1, len(chord_seq)):
-    #         results, _ = self.find_optimal_transition(
-    #             cur_chord, SATBChord(chord_seq[i], None)
-    #         )
-    #         results = [SATBChord(chord_seq[i], [Note(abs_pos) for abs_pos in result])
-    #                    for result in results]
-    #         option_map = {i + 1: result for i, result in enumerate(results)}
+        seq_idx = 0
+        cur_node = ChordNode(None, SATBChord(chord_seq[seq_idx], init_notes), None, 0)
+        while seq_idx < len(chord_seq) - 1:
+            if cur_node.next_nodes is None:
+                results, tr_cost = self.find_optimal_transition(
+                    cur_node.chord, SATBChord(chord_seq[seq_idx + 1], None)
+                )
+                results = [SATBChord(chord_seq[seq_idx + 1], result) for result in results]
+                cur_node.next_nodes = [ChordNode(cur_node, chord, None, tr_cost)
+                                       for chord in results]
+                if len(cur_node.next_nodes) == 0:
+                    raise UnableToTransitionError('Unable to transition between: {} and {}'.format(
+                        chord_seq[seq_idx].formula_name, chord_seq[seq_idx + 1].formula_name
+                    ))
+            action, choice = SolutionInterface().report_intermed_solutions(cur_node.chord,
+                                                                           cur_node.next_nodes)
+            if action == 1:
+                cur_node = cur_node.next_nodes[choice]
+                seq_idx += 1
+            elif action == -1:
+                if cur_node.prev_node is None:
+                    print(colored('Cannot step back in sequence any further!!!', 'red'))
+                else:
+                    cur_node = cur_node.prev_node
+                    seq_idx -= 1
+        full_seq = SATBSequence()
+        while cur_node is not None:
+            full_seq.add_satb_chord(cur_node.chord, cur_node.cost)
+            cur_node = cur_node.prev_node
+        full_seq.sequence.reverse()
+        return [full_seq]

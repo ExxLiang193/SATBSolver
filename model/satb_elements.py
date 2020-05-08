@@ -84,9 +84,9 @@ class SATBSequence:
         if isinstance(other, SATBSequence):
             return self._key() == other._key()
 
-    def __init__(self, init_satb_chord: SATBChord, cost: int = 0):
-        self.sequence = [init_satb_chord]
-        self.seq_cost = cost
+    def __init__(self):
+        self.sequence = []
+        self.seq_cost = 0
 
     def add_satb_chord(self, satb_chord: SATBChord, chord_cost: int):
         self.sequence.append(satb_chord)
