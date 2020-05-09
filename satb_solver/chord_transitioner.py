@@ -105,6 +105,7 @@ class ChordTransitioner:
         ).solve()
 
     def _get_agg_min_cost_seqs(self, next_seqs: List[SATBSequence]) -> List[SATBSequence]:
+        # Equivalent operation: sequence group-by, then aggregate by min cost
         min_overall_cost = min(next_seqs, key=lambda seq: seq.seq_cost).seq_cost
         seq_agg = {}
         queued_seqs = []
@@ -147,6 +148,10 @@ class ChordTransitioner:
 
     def transition_chords(self, chord_seq: List[Chord],
                           init_notes: List[str]) -> List[SATBSequence]:
+        """
+        Consumes list of chord formulae and initial condition and produces, without
+        user intervention, the optimal SATB transition sequences.
+        """
         chord_seq = list(chord_seq)
         assert len(chord_seq) >= 1, 'No chord formulas were specified in template'
         init_notes = self._infer_init_note_pos(init_notes, chord_seq[0])
@@ -156,26 +161,42 @@ class ChordTransitioner:
         )]
         for i in range(1, len(chord_seq)):
             next_seqs = []
+
+            # For each queued sequence, find optimal transitions
             for cur_seq in queued_seqs:
+                # Find NotePosPair and transition cost solutions of target sequence
                 results, tr_cost = self.find_optimal_transition(
                     cur_seq.most_recent_chord,
                     SATBChord(chord_seq[i], None)
                 )
+                # Convert NotePosPairs to SATBChord representation
                 results = [SATBChord(chord_seq[i], result) for result in results]
+                # Each new SATBChord branches off target sequence
                 new_seqs = [deepcopy(cur_seq).add_satb_chord(satb_chord, tr_cost)
                             for satb_chord in results]
+                # Add each new branch to queued sequences
                 next_seqs.extend(new_seqs)
+            # If all queued sequences are unable to find an optimal transition, then failure
             if len(next_seqs) == 0:
                 raise UnableToTransitionError('Unable to transition between: {} and {}'.format(
                     chord_seq[i - 1].formula_name, chord_seq[i].formula_name
                 ))
+            # At an intermediate transition step, aggregate sequences that arrive at
+            #  the same configuration and choose the ones with lowest sequence cost.
+            #  Otherwise, at the end, find globally optimal sequences (lowest cost).
             if i < len(chord_seq) - 1:
                 queued_seqs = self._get_agg_min_cost_seqs(next_seqs)
             else:
                 queued_seqs = self._get_abs_min_cost_seqs(next_seqs)
+
         return queued_seqs
 
-    def user_transition_chords(self, chord_seq, init_notes):
+    def user_transition_chords(self, chord_seq: List[Chord],
+                               init_notes: List[str]) -> List[SATBSequence]:
+        """
+        Consumes list of chord formulae and initial condition and produces, with
+        user intervention, the user-decided best SATB transition sequence.
+        """
         chord_seq = list(chord_seq)
         assert len(chord_seq) >= 1, 'No chord formulas were specified in template'
         init_notes = self._infer_init_note_pos(init_notes, chord_seq[0])
@@ -183,28 +204,40 @@ class ChordTransitioner:
         seq_idx = 0
         cur_node = ChordNode(None, SATBChord(chord_seq[seq_idx], init_notes), None, 0)
         while seq_idx < len(chord_seq) - 1:
+            # If current node has not computed its optimal transitions, do compute
             if cur_node.next_nodes is None:
+                # Find NotePosPair and transition cost solutions of target chord
                 results, tr_cost = self.find_optimal_transition(
                     cur_node.chord, SATBChord(chord_seq[seq_idx + 1], None)
                 )
+                # Convert NotePosPairs to SATBChord representation
                 results = [SATBChord(chord_seq[seq_idx + 1], result) for result in results]
+                # Optimal transitions are assigned to prevent further recomputation
                 cur_node.next_nodes = [ChordNode(cur_node, chord, None, tr_cost)
                                        for chord in results]
+                # If current node is unable to find any optimal transitions, then failure
                 if len(cur_node.next_nodes) == 0:
                     raise UnableToTransitionError('Unable to transition between: {} and {}'.format(
                         chord_seq[seq_idx].formula_name, chord_seq[seq_idx + 1].formula_name
                     ))
+
+            # Given the current node and its optimal transitions, prompt user to choose
+            #  either to step back in the sequence or choose a transition option
             action, choice = SolutionInterface().report_intermed_solutions(cur_node.chord,
                                                                            cur_node.next_nodes)
+            # Forward movement: user has chosen a transition option
             if action == 1:
                 cur_node = cur_node.next_nodes[choice]
                 seq_idx += 1
+            # Backward movement: step back in sequence and revisit previous choices
             elif action == -1:
                 if cur_node.prev_node is None:
                     print(colored('Cannot step back in sequence any further!!!', 'red'))
                 else:
                     cur_node = cur_node.prev_node
                     seq_idx -= 1
+
+        # Backwards traverse transition tree to generate single solution sequence
         full_seq = SATBSequence()
         while cur_node is not None:
             full_seq.add_satb_chord(cur_node.chord, cur_node.cost)

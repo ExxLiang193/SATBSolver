@@ -20,6 +20,7 @@ class AbstractRule(ABC):
 class AllNotesMatchedRule(AbstractRule):
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        # Ensure that all voices are matched
         return len(matchings) == get_config()['voice_count']
 
 
@@ -28,6 +29,7 @@ class ValidParallelIntervalRule(AbstractRule):
 
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        # Ensure that the solution does not contain any illegal parallel intervals
         for trans_pair in combinations(matchings, 2):
             lower_trans, upper_trans = trans_pair[0], trans_pair[1]
             if (
@@ -47,10 +49,11 @@ class ValidParallelIntervalRule(AbstractRule):
 class VoicesNotExceedingOctaveNorCrossingRule(AbstractRule):
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        # Ensure that the voices do not exceed an octave apart nor have perfect unisons
+        #  nor cross each other
         for i in range(1, len(matchings)):
             lower_trans = matchings[i - 1]
             upper_trans = matchings[i]
-            # There should not any perfect unisons nor intervals exceeding an octave
             if (
                 (upper_trans.next_abs_pos - lower_trans.next_abs_pos <= 0) |
                 (upper_trans.next_abs_pos - lower_trans.next_abs_pos > 12)
@@ -77,6 +80,7 @@ class VoicesWithinRangeRule(AbstractRule):
 
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        # Ensure that each voice is within range
         voices = None
         if len(matchings) == 4:
             voices = cls.FOUR_VOICES
@@ -115,6 +119,7 @@ class DominantNotesResolvingRule(AbstractRule):
 
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        # Ensure that dominant and sustained notes in specific chords resolve properly
         cur_chord = transition_context.cur_satb_chord
         if any(type(cur_chord.chord_formula) is chord_type
                for chord_type in (DOM7Chord, DOM9Chord, DOM11Chord, DOM13Chord)):
@@ -130,9 +135,11 @@ class DominantNotesResolvingRule(AbstractRule):
 class AcceptableNoteFrequenciesRule(AbstractRule):
     @classmethod
     def validate(cls, matchings: List[Transition], transition_context: TransitionContext):
+        # Ensure that the chord has proper note frequencies
         pos_counter = Counter()
         for trans in matchings:
             pos_counter[trans.next_scale_pos] += 1
+        # This is an exception reserved for when DOM7 resolves to tonic
         exc = (
             (
                 any(

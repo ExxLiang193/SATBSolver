@@ -22,6 +22,8 @@ class SATBSolver:
         if not os.path.exists(path_to_file):
             raise FileNotFoundError('Source file specified cannot be found')
 
+        # First line of input is initial condition of voices.
+        # Further lines are chord formulae.
         with open(path_to_file, 'r') as sf:
             sf_it = iter(sf)
             yield next(sf)
@@ -29,11 +31,16 @@ class SATBSolver:
                 yield value.strip()
 
     def solve(self):
+        # Split input data into initial condition and chord formula template
         init_cond, *template = self.read_source()
+        # Perform small bit of validation of initial condition
         init_notes = self.template_parser.parse_init_cond(init_cond)
+        # Parse formula template into chord formula models
         chord_sequence = self.template_parser.parse_template(template.copy())
+
         if get_config()['user_intermed']:
             solutions = self.chord_transitioner.user_transition_chords(chord_sequence, init_notes)
         else:
             solutions = self.chord_transitioner.transition_chords(chord_sequence, init_notes)
+
         SolutionInterface().report_final_solutions(template.copy(), solutions)

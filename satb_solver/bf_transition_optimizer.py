@@ -37,13 +37,14 @@ class BFTransitionOptimizer:
             [trans for trans in config.matchings.values()],
             key=lambda trans: trans.cur_abs_pos
         )
+        # The order is important, doing common failures first.
         for validator in [
-            AllNotesMatchedRule,
             AcceptableNoteFrequenciesRule,
             ValidParallelIntervalRule,
             VoicesNotExceedingOctaveNorCrossingRule,
-            VoicesWithinRangeRule,
-            DominantNotesResolvingRule
+            AllNotesMatchedRule,
+            DominantNotesResolvingRule,
+            VoicesWithinRangeRule
         ]:
             if not validator.validate(ordered_matchings, self.transition_context):
                 return False
@@ -72,18 +73,23 @@ class BFTransitionOptimizer:
             diff, transitions = heapq.heappop(self.prioritized_checker)
             for test_trans in transitions:
                 self.next_depth_configs = []
+                # If there are no configurations present, make initial configuration
                 if len(self.cur_depth_configs) == 0:
                     self._add_to_next_depth(
                         MatchConfig(matchings={test_trans.cur_abs_pos: test_trans})
                     )
                 else:
                     for cur_depth_config in self.cur_depth_configs:
+                        # Diff of -1 is sentinel value used to denote base note,
+                        #  taking highest priority
                         if diff == -1:
                             self.next_depth_configs.append(cur_depth_config)
                             self._add_to_next_depth(
                                 MatchConfig(matchings={test_trans.cur_abs_pos: test_trans})
                             )
                             continue
+                        # If transition target is already matched, split off and
+                        #  duplicate configuration
                         if test_trans.cur_abs_pos in cur_depth_config.matchings:
                             self.next_depth_configs.append(cur_depth_config)
                         cur_depth_config_matchings = cur_depth_config.matchings.copy()
@@ -92,7 +98,10 @@ class BFTransitionOptimizer:
                             MatchConfig(matchings=cur_depth_config_matchings)
                         )
                 self.cur_depth_configs = self.next_depth_configs.copy()
+            # If there are valid configurations, SUCCESS, otherwise, continue on
+            #  with all invalid configurations.
             valids = list(filter(self._is_valid_config, self.cur_depth_configs))
             if len(valids) > 0:
                 return self._get_min_cost_config(valids)
+        # If no valid configurations could be found, indicate so
         return [], 0
