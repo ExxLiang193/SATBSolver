@@ -134,16 +134,32 @@ class ChordTransitioner:
     def _infer_init_note_pos(self, init_notes: List[str],
                              init_model_chord: Chord) -> Set[NotePosPair]:
         result = set()
+        rev_map = init_model_chord.get_itvl_note_mapping()
+
         for init_note in init_notes:
             parts = re.search(r'^([A-G])(bb|b|#|x)?(\d)$', init_note)
+            if parts is None:
+                raise ValueError('Initial note {}: unreadable format.'.format(init_note))
+
             abs_note = AbstractNote(parts.group(1) + (parts.group(2) or ''))
-            rev_map = init_model_chord.get_itvl_note_mapping()
             scale_pos = rev_map.get(abs_note, inv=True)
+            if scale_pos is None:
+                raise ValueError('Initial note {}: does not belong in {} chord.'.format(
+                    init_note, init_model_chord.formula_name
+                ))
+
             pair = NotePosPair(scale_pos, Note(abs_note, int(parts.group(3))))
             if pair in result:
                 raise ValueError('Duplicate note {} in initial notes.'.format(init_note))
             else:
-                result.add(NotePosPair(scale_pos, Note(abs_note, int(parts.group(3)))))
+                result.add(pair)
+
+        min_note = min(result, key=lambda pair: pair.note_repr.abs_pos)
+        if min_note.note_repr.semi_pos != init_model_chord.get_base_with_inv().semi_pos:
+            raise ValueError('Initial notes are not in inversion: {}.'.format(
+                init_model_chord.inversion or 'ROOT'
+            ))
+
         return result
 
     def transition_chords(self, chord_seq: List[Chord],
