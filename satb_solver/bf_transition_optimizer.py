@@ -1,4 +1,5 @@
 import heapq
+import math
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
@@ -19,15 +20,11 @@ class BFTransitionOptimizer:
         self.next_depth_configs = []
         self.checked = set()
 
-    def _get_hashable_matchings(
-        self, config_matchings: Dict[int, Transition]
-    ) -> Tuple[Transition, ...]:
-        return tuple(
-            sorted(config_matchings.values(), key=lambda trans: trans.cur_abs_pos)
-        )
+    def _get_hashable_matchings(self, transitions: List[Transition]) -> int:
+        return sum(math.sin(trans.cur_abs_pos * trans.next_abs_pos) for trans in transitions)
 
     def _add_to_next_depth(self, new_config: MatchConfig) -> None:
-        hashable_config_matching = self._get_hashable_matchings(new_config.matchings)
+        hashable_config_matching = self._get_hashable_matchings(new_config.matchings.values())
         if hashable_config_matching not in self.checked:
             self.checked.add(hashable_config_matching)
             self.next_depth_configs.append(new_config)
@@ -97,7 +94,7 @@ class BFTransitionOptimizer:
                         self._add_to_next_depth(
                             MatchConfig(matchings=cur_depth_config_matchings)
                         )
-                self.cur_depth_configs = self.next_depth_configs.copy()
+                self.cur_depth_configs = self.next_depth_configs
             # If there are valid configurations, SUCCESS, otherwise, continue on
             #  with all invalid configurations.
             valids = list(filter(self._is_valid_config, self.cur_depth_configs))

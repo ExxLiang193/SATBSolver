@@ -26,34 +26,31 @@ class ChordTransitioner:
     def _min_diff(self, abs_note: int, rel_note: int, full=False) -> Tuple[int, Set[int]]:
         octave, rel_abs_note = abs_note // 12, abs_note % 12
         if rel_note == rel_abs_note:
-            return (0, {abs_note})
+            return [(0, abs_note)]
         offset = 0 if rel_note < rel_abs_note else -1
         lower_abs_note = (octave + offset) * 12 + rel_note
         upper_abs_note = (octave + offset + 1) * 12 + rel_note
         if full:
-            return (-1, {lower_abs_note, upper_abs_note})
-        if abs_note - lower_abs_note == 6:
-            return (6, {lower_abs_note, upper_abs_note})
-        elif abs_note - lower_abs_note < 6:
-            return (abs_note - lower_abs_note, {lower_abs_note})
-        else:
-            return (upper_abs_note - abs_note, {upper_abs_note})
+            return [(-1, lower_abs_note), (-1, upper_abs_note)]
+        return [(abs_note - lower_abs_note, lower_abs_note),
+                (upper_abs_note - abs_note, upper_abs_note)]
 
     def _agg_trans(self, cur_abs_note: NotePosPair, next_rel_note: NotePosPair,
                    trans_agg: Dict[int, Set[Transition]], full=False) -> None:
-        min_transition_diff, min_diff_notes = (
+        min_diff_notes = (
             self._min_diff(
                 cur_abs_note.note_repr.abs_pos,
                 next_rel_note.note_repr.semi_pos,
-                full)
+                full
+            )
         )
-        for note in min_diff_notes:
+        for min_transition_diff, abs_pos in min_diff_notes:
             new_transition = Transition(
                 min_diff=min_transition_diff,
                 cur_pair=cur_abs_note,
                 next_pair=NotePosPair(
                     next_rel_note.scale_pos,
-                    Note(next_rel_note.note_repr, note // 12)
+                    Note(next_rel_note.note_repr, abs_pos // 12)
                 )
             )
             if min_transition_diff in trans_agg:
