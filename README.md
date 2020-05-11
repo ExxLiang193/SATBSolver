@@ -22,7 +22,6 @@ See `example_input.txt` in project directory for example input format. Write you
   * Write in 4 notes (see [here](#satbsolver-global-settings) for details). For reference, middle C is `C4`, and the nearest `B` is `B3`.
   * Keep all initial notes on one line.
 * The following lines are chord formulae. These follow conventional formula formats. See the property `formula_matcher` in [satb_solver/template_parser.py](satb_solver/template_parser.py) for the specific syntax or see below for a simpler explanation.
-  * The first chord formula MUST match the initial condition. Validation has not been implemented for it yet.
 
 ### Formula Format
 The chord formula is composed of the following parts **in order**:
